@@ -5,7 +5,7 @@ import csv
 
 driver = webdriver.Chrome()
 
-driver.get('http://www.koeri.boun.edu.tr/scripts/lst8.asp')
+driver.get('http://www.koeri.boun.edu.tr/scripts/lst0.asp')
 
 pre_element = driver.find_element(By.TAG_NAME, "pre")
 data = pre_element.text
