@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Kandilli Rasathanesi Son 500 Depremler</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css">
+  <style>
+    #map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #refresh-btn {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #fff;
+      color: #000;
+      border: 2px solid #000;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #info {
+      position: fixed;
+      bottom: 10px;
+      left: 10px;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.8); 
+      border-radius: 8px;
+      font-family: Arial, sans-serif;
+      font-size: 14px;
+      color: #000;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <div id="refresh-btn" onclick="yenileVeriler()">Verileri Yenile</div>
+
+  <div id="info">
+    <h3>Son 10 Deprem Bilgileri</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Tarih</th>
+          <th>Saat</th>
+          <th>Yer</th>
+          <th>ML Değeri</th>
+          <th>Derinlik</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for deprem in son_depremler %}
+        <tr>
+          <td>{{ deprem[0] }}</td>
+          <td>{{ deprem[1] }}</td>
+          <td>{{ deprem[4] }}</td>
+          <td>{{ deprem[3] }}</td>
+          <td>{{ deprem[2] }} km</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p>Verilerin Hepsi Kandilli Rasathanesi'nden alınmıştır. (<a href="http://www.koeri.boun.edu.tr/scripts/lst8.asp">http://www.koeri.boun.edu.tr/scripts/lst8.asp</a>)</p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+  <script>
+    var map = L.map('map').setView([39.925533, 32.866287], 6); 
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: 'Harita Verisi, <a href="https://openstreetmap.org">OpenStreetMap</a> ',
+      maxZoom: 18,
+    }).addTo(map);
+
+    var locations = {{ locations|tojson }};
+    var derinlikMlYer = {{ derinlik_ml_yer|tojson }};
+    var markers = [];
+    for (var i = 0; i < locations.length; i++) {
+      var marker = L.marker(locations[i]).addTo(map);
+      markers.push(marker);
+      marker.bindPopup('Tarih: ' + derinlikMlYer[i][0] + '<br>Saat: ' + derinlikMlYer[i][1] + '<br>Yer: ' + derinlikMlYer[i][4] + '<br>Derinlik: ' + derinlikMlYer[i][2] + ' km<br>ML Değer: ' + derinlikMlYer[i][3]);
+    }
+
+    function yenileVeriler() {
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', '/yenile');
+      xhr.onreadystatechange = function() {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          location.reload();
+        }
+      };
+      xhr.send();
+    }
+  </script>
+</body>
+</html>
